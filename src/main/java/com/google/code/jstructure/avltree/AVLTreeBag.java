@@ -9,11 +9,8 @@ public class AVLTreeBag<T extends Comparable<T>> {
     public void add(T item) {
         if (item == null) 
             throw new IllegalArgumentException();
-        try {
-            internalAdd(item);
-        } finally { 
-            size++;
-        }
+        internalAdd(item);
+        size++;
     }
     
     private void internalAdd(T item) {
