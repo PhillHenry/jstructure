@@ -6,6 +6,77 @@ public class AVLTreeBag<T extends Comparable<T>> {
     
     private int size;
 
+    public boolean remove(T item) {
+        Node<T> node    = root;
+        Node<T> parent  = null;
+        while (node != null) {
+            if (item.compareTo(node.getItem()) > 0) {
+                parent = node;
+                node = node.getRight();
+            } else if (item.compareTo(node.getItem()) < 0)  { // if items are equal, arbitrarily use left value
+                parent = node;
+                node = node.getLeft();
+            } else {
+                break;
+            }
+        }
+        System.out.println("node = " + node + ", parent = " + parent);
+        if (node == null)
+            return false;
+//        if (node == root) {
+//            throw new UnsupportedOperationException("todo handle root");
+//        } else {
+            if (node.getNumberOfChildren() == 0) {
+                if (parent != null) {
+                    parent.replace(node, null);
+                } else {
+                    root = null;
+                }
+            } else if (node.getNumberOfChildren() == 1) {
+                Node<T> with;
+                if (node.getLeft() != null) {
+                    with = node.getLeft();
+                } else {
+                    with = node.getRight();
+                }
+                if (parent != null) {
+                    parent.changePositions(node, with);
+                } else {
+                    root = with;
+                }
+                with.setParent(parent);
+                checkConsistency(with, false);
+            } else {
+                Node<T> predecessor = largestIn(node.getLeft());
+                Node<T> predecessorParent = predecessor.getParent();
+                Node<T> oldLeft = predecessor.getLeft();
+                if (predecessorParent != node) {
+                    predecessorParent.setRight(oldLeft);
+                    predecessor.setLeft(node.getLeft());
+                } else {
+                    predecessor.setRight(node.getRight());
+                }
+                if (parent != null) {
+                    parent.changePositions(node, predecessor);
+                } else {
+                    root = predecessor;
+                }
+                predecessor.setParent(parent);
+                checkConsistency(oldLeft == null ? predecessorParent : oldLeft, false);
+            }
+//        }
+        size--;
+        return true;
+    }
+    
+    private Node<T> largestIn(Node<T> subtreeRoot) {
+        Node<T> right = subtreeRoot.getRight();
+        if (right != null) {
+            return largestIn(right);
+        } 
+        return subtreeRoot;
+    }
+
     public void add(T item) {
         if (item == null) 
             throw new IllegalArgumentException();
@@ -157,5 +228,6 @@ public class AVLTreeBag<T extends Comparable<T>> {
     Node<T> getRoot() {
         return root;
     }
+
 
 }

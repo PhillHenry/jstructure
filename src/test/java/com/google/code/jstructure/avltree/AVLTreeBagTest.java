@@ -2,6 +2,7 @@ package com.google.code.jstructure.avltree;
 
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertNull;
+import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 import junit.framework.Assert;
 
@@ -172,6 +173,16 @@ public class AVLTreeBagTest {
         assertEquals(3, toTest.size());
         root = toTest.getRoot();
         assertEquals(2, root.getNumberOfChildren());
+    }
+    
+    @Test
+    public void remove() {
+        int total = 10;
+        populate(total);
+        for (int i = total ; i > 0 ; --i) {
+            assertTrue("" + i, toTest.remove(i - 1));
+            assertEquals(i - 1, toTest.size());
+        }
     }
 
     private void populate(int total) {
