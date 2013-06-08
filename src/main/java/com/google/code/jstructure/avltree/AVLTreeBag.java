@@ -13,60 +13,61 @@ public class AVLTreeBag<T extends Comparable<T>> {
             if (item.compareTo(node.getItem()) > 0) {
                 parent = node;
                 node = node.getRight();
-            } else if (item.compareTo(node.getItem()) < 0)  { // if items are equal, arbitrarily use left value
+            } else if (item.compareTo(node.getItem()) < 0)  { 
                 parent = node;
                 node = node.getLeft();
             } else {
                 break;
             }
         }
-        System.out.println("node = " + node + ", parent = " + parent);
         if (node == null)
-            return false;
-//        if (node == root) {
-//            throw new UnsupportedOperationException("todo handle root");
-//        } else {
-            if (node.getNumberOfChildren() == 0) {
-                if (parent != null) {
-                    parent.replace(node, null);
-                } else {
-                    root = null;
-                }
-            } else if (node.getNumberOfChildren() == 1) {
-                Node<T> with;
-                if (node.getLeft() != null) {
-                    with = node.getLeft();
-                } else {
-                    with = node.getRight();
-                }
-                if (parent != null) {
-                    parent.changePositions(node, with);
-                } else {
-                    root = with;
-                }
-                with.setParent(parent);
-                checkConsistency(with, false);
-            } else {
-                Node<T> predecessor = largestIn(node.getLeft());
-                Node<T> predecessorParent = predecessor.getParent();
-                Node<T> oldLeft = predecessor.getLeft();
-                if (predecessorParent != node) {
-                    predecessorParent.setRight(oldLeft);
-                    predecessor.setLeft(node.getLeft());
-                } else {
-                    predecessor.setRight(node.getRight());
-                }
-                if (parent != null) {
-                    parent.changePositions(node, predecessor);
-                } else {
-                    root = predecessor;
-                }
-                predecessor.setParent(parent);
-                checkConsistency(oldLeft == null ? predecessorParent : oldLeft, false);
-            }
-//        }
+            return false; // didn't find anything
+
+        delete(node, parent);
         size--;
         return true;
+    }
+
+    private void delete(Node<T> toDelete, Node<T> parent) {
+        Node<T> with    = null;
+        Node<T> toCheck = null;
+        if (toDelete.getNumberOfChildren() == 0) {
+            // fall thru
+        } else if (toDelete.getNumberOfChildren() == 1) {
+            if (toDelete.getLeft() != null) {
+                with = toDelete.getLeft();
+            } else {
+                with = toDelete.getRight();
+            }
+            toCheck = with;
+        } else {
+            Node<T> predecessor         = largestIn(toDelete.getLeft());
+            Node<T> predecessorParent   = predecessor.getParent();
+            Node<T> predecessorOldLeft  = predecessor.getLeft();
+            if (predecessorParent != toDelete) {
+                predecessorParent.setRight(predecessorOldLeft);
+                predecessor.setLeft(toDelete.getLeft());
+            } else {
+                predecessor.setRight(toDelete.getRight());
+            }
+            with    = predecessor;
+            toCheck = predecessorOldLeft == null ? predecessorParent : predecessorOldLeft;
+        }
+        changePosition(toDelete, parent, with);
+        if (toCheck != null) {
+            checkConsistency(toCheck, false);
+        }
+    }
+
+    private void changePosition(Node<T> node, Node<T> parent, Node<T> with) {
+        if (parent != null) {
+            parent.changePositions(node, with);
+        } else {
+            root = with;
+        }
+        if (with != null) {
+            with.setParent(parent);
+        }
     }
     
     private Node<T> largestIn(Node<T> subtreeRoot) {
